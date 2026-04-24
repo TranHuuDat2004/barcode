@@ -239,22 +239,39 @@ input[type="text"]:focus {
 .scanner-wrapper {
     position: relative;
     width: 100%;
-    aspect-ratio: 4/3;
+    height: 70vh; /* Tăng diện tích camera lên khoảng 70-80% chiều cao màn hình */
     background: #000;
-    border-radius: 8px;
+    border-radius: var(--radius);
     overflow: hidden;
     margin-bottom: 20px;
 }
 
 #reader {
     width: 100% !important;
+    height: 100% !important;
     border: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #reader video {
     width: 100% !important;
     height: 100% !important;
     object-fit: cover !important;
+}
+
+/* Ẩn các thành phần giao diện mặc định của thư viện html5-qrcode */
+#reader__status_span, 
+#reader__dashboard, 
+#reader img,
+#reader button {
+    display: none !important;
+}
+
+/* Ẩn viền vùng quét mặc định của thư viện để dùng frame tùy chỉnh */
+#reader > div:first-child > div:first-child {
+    border: none !important;
 }
 
 /* Scanner Overlay */
@@ -275,7 +292,8 @@ input[type="text"]:focus {
     width: 70%;
     height: 60%;
     position: relative;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-sizing: border-box;
 }
 
 .scan-line {
@@ -307,6 +325,39 @@ input[type="text"]:focus {
 .top-right { top: -2px; right: -2px; border-top-width: 4px; border-right-width: 4px; }
 .bottom-left { bottom: -2px; left: -2px; border-bottom-width: 4px; border-left-width: 4px; }
 .bottom-right { bottom: -2px; right: -2px; border-bottom-width: 4px; border-right-width: 4px; }
+
+/* Zoom Controls */
+.zoom-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 0 10px;
+}
+
+.zoom-container i {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+#zoom-slider {
+    flex: 1;
+    height: 6px;
+    -webkit-appearance: none;
+    background: #e2e8f0;
+    border-radius: 10px;
+    outline: none;
+}
+
+#zoom-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
 
 /* Result Card */
 .result-card {
@@ -380,14 +431,19 @@ footer p {
 /* Responsive adjustments */
 @media (max-width: 400px) {
     .app-container {
-        padding: 15px;
+        padding: 10px;
     }
     
     header h1 {
-        font-size: 1.75rem;
+        font-size: 1.5rem;
     }
-    
-    .scan-box {
-        width: 80%;
+
+    #scan-section .card {
+        padding: 12px;
+    }
+
+    .scanner-wrapper {
+        height: 75vh;
+        margin-bottom: 15px;
     }
 }
