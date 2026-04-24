@@ -167,45 +167,64 @@ document.addEventListener('DOMContentLoaded', () => {
             scannerOverlay.classList.remove('hidden');
             showToast('Đang khởi động camera...');
 
-            // Kiểm tra khả năng Zoom
-            try {
-                const capabilities = html5QrCode.getRunningTrackCapabilities();
-                const settings = html5QrCode.getRunningTrackSettings();
-                
-                if (capabilities.zoom) {
-                    zoomControls.classList.remove('hidden');
-                    zoomSlider.min = capabilities.zoom.min;
-                    zoomSlider.max = capabilities.zoom.max;
-                    zoomSlider.step = capabilities.zoom.step || 0.1;
-                    zoomSlider.value = settings.zoom || capabilities.zoom.min;
-                    
-                    zoomSlider.oninput = async () => {
-                        try {
-                            await html5QrCode.applyVideoConstraints({
-                                advanced: [{ zoom: parseFloat(zoomSlider.value) }]
-                            });
-                        } catch (e) {
-                            console.error("Zoom error:", e);
-                        }
-                    };
-                }
-            } catch (e) {
-                console.warn("Camera không hỗ trợ các tính năng nâng cao:", e);
-            }
-
-            // Tính năng Tap to Focus (Giả lập)
-            const readerElement = document.getElementById('reader');
-            readerElement.onclick = async () => {
+            // --- Thiết lập các tính năng nâng cao (Zoom/Focus) sau khi camera đã chạy ---
+            // Chúng ta dùng setTimeout để đảm bảo track đã ổn định trên mọi thiết bị
+            setTimeout(async () => {
                 try {
-                    // Gửi lại yêu cầu focus khi người dùng chạm vào màn hình
-                    await html5QrCode.applyVideoConstraints({
-                        advanced: [{ focusMode: "continuous" }]
-                    });
-                    showToast('Đang lấy nét...');
+                    const capabilities = html5QrCode.getRunningTrackCapabilities();
+                    const settings = html5QrCode.getRunningTrackSettings();
+                    const videoElement = document.querySelector('#reader video');
+                    
+                    if (capabilities && capabilities.zoom) {
+                        // --- Hardware Zoom (Mobile) ---
+                        zoomControls.classList.remove('hidden');
+                        zoomSlider.min = capabilities.zoom.min;
+                        zoomSlider.max = capabilities.zoom.max;
+                        zoomSlider.step = capabilities.zoom.step || 0.1;
+                        zoomSlider.value = settings.zoom || capabilities.zoom.min;
+                        
+                        zoomSlider.oninput = async () => {
+                            try {
+                                await html5QrCode.applyVideoConstraints({
+                                    advanced: [{ zoom: parseFloat(zoomSlider.value) }]
+                                });
+                            } catch (e) {
+                                console.error("Hardware zoom error:", e);
+                            }
+                        };
+                    } else {
+                        // --- Digital Zoom Fallback (PC/Other) ---
+                        zoomControls.classList.remove('hidden');
+                        zoomSlider.min = 1;
+                        zoomSlider.max = 3;
+                        zoomSlider.step = 0.1;
+                        zoomSlider.value = 1;
+                        
+                        zoomSlider.oninput = () => {
+                            if (videoElement) {
+                                videoElement.style.transform = `scale(${zoomSlider.value})`;
+                                videoElement.style.transition = "transform 0.2s ease";
+                            }
+                        };
+                    }
+
+                    // Thêm tính năng Tap to Focus sau khi đã chắc chắn có video
+                    if (videoElement) {
+                        videoElement.onclick = async () => {
+                            try {
+                                await html5QrCode.applyVideoConstraints({
+                                    advanced: [{ focusMode: "continuous" }]
+                                });
+                                showToast('Đang lấy nét...');
+                            } catch (e) {
+                                console.log("Tap to focus không được hỗ trợ");
+                            }
+                        };
+                    }
                 } catch (e) {
-                    console.log("Tap to focus không được hỗ trợ");
+                    console.warn("Không thể thiết lập tính năng nâng cao:", e);
                 }
-            };
+            }, 500);
 
         } catch (err) {
             console.error("Lỗi khởi động camera:", err);
