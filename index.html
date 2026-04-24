@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Barcode Pro - Tạo & Quét Mã Vạch</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Barcode <span class="accent">Pro</span></h1>
+            <p>Giải pháp mã vạch toàn diện</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="generate">
+                <i class="fas fa-plus-circle"></i> Tạo Mã
+            </button>
+            <button class="tab-btn" data-tab="scan">
+                <i class="fas fa-qrcode"></i> Quét Mã
+            </button>
+        </nav>
+
+        <main class="content">
+            <!-- Generate Section -->
+            <section id="generate-section" class="tab-content active">
+                <div class="card">
+                    <h2>Tạo Mã Vạch Mới</h2>
+                    <div class="input-group">
+                        <label for="barcode-input">Nhập dữ liệu:</label>
+                        <input type="text" id="barcode-input" placeholder="Ví dụ: 123456789" autocomplete="off">
+                    </div>
+                    <button id="generate-btn" class="btn btn-primary">
+                        <i class="fas fa-magic"></i> Tạo Mã Vạch
+                    </button>
+                    
+                    <div id="barcode-result" class="barcode-display">
+                        <p class="placeholder-text">Mã vạch sẽ hiển thị ở đây</p>
+                        <svg id="barcode-canvas"></svg>
+                        <button id="download-btn" class="btn btn-outline hidden">
+                            <i class="fas fa-download"></i> Tải về (PNG)
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Scan Section -->
+            <section id="scan-section" class="tab-content">
+                <div class="card">
+                    <h2>Quét Mã Vạch</h2>
+                    <div class="scanner-wrapper">
+                        <div id="reader"></div>
+                        <div id="scanner-overlay" class="hidden">
+                            <div class="scan-box">
+                                <div class="scan-line"></div>
+                                <div class="corner top-left"></div>
+                                <div class="corner top-right"></div>
+                                <div class="corner bottom-left"></div>
+                                <div class="corner bottom-right"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="scan-controls">
+                        <button id="start-scan-btn" class="btn btn-primary">
+                            <i class="fas fa-camera"></i> Bắt đầu Camera
+                        </button>
+                        <button id="stop-scan-btn" class="btn btn-danger hidden">
+                            <i class="fas fa-stop"></i> Dừng Camera
+                        </button>
+                    </div>
+
+                    <div id="scan-result-card" class="result-card hidden">
+                        <h3>Kết quả quét:</h3>
+                        <div class="result-value" id="scan-result-value"></div>
+                        <button id="copy-btn" class="btn btn-small">
+                            <i class="fas fa-copy"></i> Sao chép
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Barcode Pro. Thiết kế bởi Antigravity.</p>
+        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-container"></div>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
