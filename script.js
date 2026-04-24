@@ -154,13 +154,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 aspectRatio: undefined // Để trình duyệt tự chọn tỉ lệ tốt nhất cho camera
             };
 
-            // Khởi chạy camera với các cài đặt tối ưu cho focus
+            // Khởi chạy camera cơ bản trước
             await html5QrCode.start(
-                { 
-                    facingMode: "environment",
-                    // Một số trình duyệt hỗ trợ focusMode trực tiếp ở đây
-                    advanced: [{ focusMode: "continuous" }] 
-                }, 
+                { facingMode: "environment" }, 
                 config, 
                 onScanSuccess
             );
@@ -213,7 +209,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (err) {
             console.error("Lỗi khởi động camera:", err);
-            showToast('Không thể truy cập camera. Vui lòng cấp quyền.');
+            
+            let errorMsg = 'Không thể truy cập camera.';
+            if (err.name === 'NotAllowedError' || err === 'NotAllowedError') {
+                errorMsg = 'Bạn đã từ chối cấp quyền camera. Vui lòng bật lại trong cài đặt trình duyệt.';
+            } else if (err.name === 'NotFoundError' || err === 'NotFoundError') {
+                errorMsg = 'Không tìm thấy camera trên thiết bị này.';
+            } else if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+                errorMsg = 'Camera yêu cầu kết nối bảo mật (HTTPS).';
+            }
+            
+            showToast(errorMsg);
+            
+            // Reset UI
+            isScanning = false;
+            startScanBtn.classList.remove('hidden');
+            stopScanBtn.classList.add('hidden');
+            scannerOverlay.classList.add('hidden');
         }
     };
 
