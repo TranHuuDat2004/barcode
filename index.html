@@ -26,6 +26,9 @@
             <button class="tab-btn" data-tab="scan">
                 <i class="fas fa-qrcode"></i> Quét Mã
             </button>
+            <button class="tab-btn" data-tab="history">
+                <i class="fas fa-history"></i> Lịch sử
+            </button>
         </nav>
 
         <main class="content">
@@ -89,6 +92,21 @@
                         <button id="copy-btn" class="btn btn-small">
                             <i class="fas fa-copy"></i> Sao chép
                         </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Section -->
+            <section id="history-section" class="tab-content">
+                <div class="card">
+                    <div class="card-header-flex">
+                        <h2>Lịch sử quét</h2>
+                        <button id="clear-history-btn" class="btn-text">
+                            <i class="fas fa-trash-alt"></i> Xóa hết
+                        </button>
+                    </div>
+                    <div id="history-list" class="history-list">
+                        <p class="placeholder-text">Chưa có lịch sử quét nào</p>
                     </div>
                 </div>
             </section>

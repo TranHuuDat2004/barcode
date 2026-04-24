@@ -21,6 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const scanResultValue = document.getElementById('scan-result-value');
     const copyBtn = document.getElementById('copy-btn');
     
+    // History elements
+    const historyList = document.getElementById('history-list');
+    const clearHistoryBtn = document.getElementById('clear-history-btn');
+    
     // Zoom controls
     const zoomControls = document.getElementById('zoom-controls');
     const zoomSlider = document.getElementById('zoom-slider');
@@ -28,6 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- State ---
     let html5QrCode = null;
     let isScanning = false;
+    let scanHistory = JSON.parse(localStorage.getItem('barcode_history') || '[]');
+
+    // Initialize history display
+    renderHistory();
 
     // --- Tab Switching Logic ---
     tabBtns.forEach(btn => {
@@ -126,6 +134,9 @@ document.addEventListener('DOMContentLoaded', () => {
         scanResultValue.textContent = decodedText;
         scanResultCard.classList.remove('hidden');
         showToast('Đã tìm thấy mã vạch!');
+        
+        // Save to history
+        saveToHistory(decodedText);
         
         // Vibrate if supported
         if (navigator.vibrate) {
@@ -273,6 +284,78 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Đã sao chép vào bộ nhớ tạm');
         });
     });
+
+    // --- History Helper Functions ---
+    function saveToHistory(code) {
+        const timestamp = new Date().toLocaleString('vi-VN');
+        const newItem = { code, time: timestamp, id: Date.now() };
+        
+        // Add to beginning of array
+        scanHistory.unshift(newItem);
+        
+        // Keep only last 50 items
+        if (scanHistory.length > 50) {
+            scanHistory.pop();
+        }
+        
+        localStorage.setItem('barcode_history', JSON.stringify(scanHistory));
+        renderHistory();
+    }
+
+    function renderHistory() {
+        if (scanHistory.length === 0) {
+            historyList.innerHTML = '<p class="placeholder-text">Chưa có lịch sử quét nào</p>';
+            return;
+        }
+
+        historyList.innerHTML = '';
+        scanHistory.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            div.innerHTML = `
+                <div class="history-info">
+                    <span class="history-code">${item.code}</span>
+                    <span class="history-time">${item.time}</span>
+                </div>
+                <div class="history-actions">
+                    <button class="btn-icon copy-history" data-code="${item.code}" title="Sao chép">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="btn-icon delete-history" data-id="${item.id}" title="Xóa">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            `;
+            historyList.appendChild(div);
+        });
+
+        // Add event listeners for history actions
+        document.querySelectorAll('.copy-history').forEach(btn => {
+            btn.onclick = () => {
+                navigator.clipboard.writeText(btn.getAttribute('data-code'));
+                showToast('Đã sao chép mã vạch');
+            };
+        });
+
+        document.querySelectorAll('.delete-history').forEach(btn => {
+            btn.onclick = () => {
+                const id = parseInt(btn.getAttribute('data-id'));
+                scanHistory = scanHistory.filter(item => item.id !== id);
+                localStorage.setItem('barcode_history', JSON.stringify(scanHistory));
+                renderHistory();
+                showToast('Đã xóa mục lịch sử');
+            };
+        });
+    }
+
+    clearHistoryBtn.onclick = () => {
+        if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử quét không?')) {
+            scanHistory = [];
+            localStorage.setItem('barcode_history', JSON.stringify(scanHistory));
+            renderHistory();
+            showToast('Đã xóa toàn bộ lịch sử');
+        }
+    };
 
     // --- Helper: Toast Notification ---
     function showToast(message) {

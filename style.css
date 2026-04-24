@@ -122,8 +122,18 @@ header p {
 .card h2 {
     font-size: 1.25rem;
     font-weight: 700;
-    margin-bottom: 20px;
     text-align: center;
+}
+
+.card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.card-header-flex h2 {
+    margin-bottom: 0;
 }
 
 /* Input Groups */
@@ -201,6 +211,18 @@ input[type="text"]:focus {
     margin-top: 10px;
     background: #f1f5f9;
     color: var(--text-main);
+}
+
+.btn-text {
+    background: transparent;
+    border: none;
+    color: var(--danger);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .btn:disabled {
@@ -380,6 +402,63 @@ input[type="text"]:focus {
     font-weight: 700;
     color: #047857;
     word-break: break-all;
+}
+
+/* History List */
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: transform 0.2s;
+}
+
+.history-item:active {
+    transform: scale(0.98);
+}
+
+.history-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.history-code {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-main);
+}
+
+.history-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.history-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    border: none;
+    background: white;
+    color: var(--text-muted);
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 /* Toast */
