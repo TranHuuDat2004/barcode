@@ -579,4 +579,9 @@ footer p {
         height: 75vh;
         margin-bottom: 15px;
     }
+
+    .toast {
+        font-size: 0.8rem;
+        padding: 10px 20px;
+    }
 }
