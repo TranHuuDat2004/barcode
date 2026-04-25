@@ -250,7 +250,7 @@ input[type="text"]:focus {
 }
 
 #barcode-canvas {
-    max-width: 100%;
+    width: 100%;
     height: auto;
     background: white;
     padding: 10px;
@@ -323,8 +323,8 @@ input[type="text"]:focus {
 }
 
 .scan-box {
-    width: 70%;
-    height: 60%;
+    width: 90%;
+    height: 70%;
     position: relative;
     border: 2px solid rgba(255, 255, 255, 0.2);
     box-sizing: border-box;
@@ -348,17 +348,17 @@ input[type="text"]:focus {
 
 .corner {
     position: absolute;
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
     border-color: var(--primary);
     border-style: solid;
     border-width: 0;
 }
 
-.top-left { top: -2px; left: -2px; border-top-width: 4px; border-left-width: 4px; }
-.top-right { top: -2px; right: -2px; border-top-width: 4px; border-right-width: 4px; }
-.bottom-left { bottom: -2px; left: -2px; border-bottom-width: 4px; border-left-width: 4px; }
-.bottom-right { bottom: -2px; right: -2px; border-bottom-width: 4px; border-right-width: 4px; }
+.top-left { top: -3px; left: -3px; border-top-width: 6px; border-left-width: 6px; }
+.top-right { top: -3px; right: -3px; border-top-width: 6px; border-right-width: 6px; }
+.bottom-left { bottom: -3px; left: -3px; border-bottom-width: 6px; border-left-width: 6px; }
+.bottom-right { bottom: -3px; right: -3px; border-bottom-width: 6px; border-right-width: 6px; }
 
 /* Zoom Controls */
 .zoom-container {

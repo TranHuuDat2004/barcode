@@ -85,9 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 format: "CODE128",
                 lineColor: "#000",
                 width: 2,
-                height: 100,
+                height: 120,
                 displayValue: true,
-                fontSize: 16,
+                fontSize: 18,
                 background: "#ffffff"
             });
             
@@ -255,10 +255,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const config = { 
                 fps: 15, // Tốc độ vừa phải để giải mã chính xác hơn
                 qrbox: (viewfinderWidth, viewfinderHeight) => {
-                    // Trả về vùng quét khớp với tỉ lệ 70% width, 60% height trong CSS
+                    // Trả về vùng quét khớp với tỉ lệ 90% width, 70% height trong CSS
                     return {
-                        width: viewfinderWidth * 0.7,
-                        height: viewfinderHeight * 0.6
+                        width: viewfinderWidth * 0.9,
+                        height: viewfinderHeight * 0.7
                     };
                 },
                 aspectRatio: undefined // Để trình duyệt tự chọn tỉ lệ tốt nhất cho camera
