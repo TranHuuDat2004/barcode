@@ -264,6 +264,9 @@ input[type="text"]:focus {
     color: #000;
     text-align: center;
     width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.2;
 }
 
 /* Scanner Wrapper */

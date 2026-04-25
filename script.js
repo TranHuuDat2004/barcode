@@ -122,40 +122,72 @@ document.addEventListener('DOMContentLoaded', () => {
         const isProductNameVisible = !productNameDisplay.classList.contains('hidden');
         
         const svgData = new XMLSerializer().serializeToString(svg);
-        const canvas = document.createElement("canvas");
         const svgSize = svg.getBBox();
-        
         const padding = 14;
         const gap = 14;
         const fontSize = 20;
-        const titleHeight = isProductNameVisible ? (fontSize + gap) : 0;
+        const lineHeight = fontSize * 1.2;
         
+        // Hàm phụ để ngắt dòng text trên canvas
+        const getLines = (ctx, text, maxWidth) => {
+            const words = text.split(" ");
+            const lines = [];
+            let currentLine = words[0];
+
+            for (let i = 1; i < words.length; i++) {
+                const word = words[i];
+                const width = ctx.measureText(currentLine + " " + word).width;
+                if (width < maxWidth) {
+                    currentLine += " " + word;
+                } else {
+                    lines.push(currentLine);
+                    currentLine = word;
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        };
+
+        // Tạo canvas tạm để tính toán số dòng
+        const tempCanvas = document.createElement("canvas");
+        const tempCtx = tempCanvas.getContext("2d");
+        tempCtx.font = `bold ${fontSize}px Inter, Arial, sans-serif`;
+        
+        let lines = [];
+        let titleAreaHeight = 0;
+        
+        if (isProductNameVisible) {
+            lines = getLines(tempCtx, productName, svgSize.width);
+            titleAreaHeight = (lines.length * lineHeight) + gap;
+        }
+        
+        const canvas = document.createElement("canvas");
         canvas.width = svgSize.width + (padding * 2);
-        canvas.height = svgSize.height + (padding * 2) + titleHeight;
+        canvas.height = svgSize.height + (padding * 2) + titleAreaHeight;
         
         const ctx = canvas.getContext("2d");
         const img = new Image();
         
         img.onload = () => {
-            // Draw background
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Draw Title if exists
             if (isProductNameVisible) {
                 ctx.fillStyle = "black";
                 ctx.font = `bold ${fontSize}px Inter, Arial, sans-serif`;
                 ctx.textAlign = "center";
-                ctx.textBaseline = "top"; // Căn lề trên để tính toán khoảng cách chính xác hơn
-                ctx.fillText(productName, canvas.width / 2, padding);
+                ctx.textBaseline = "top";
+                
+                lines.forEach((line, index) => {
+                    ctx.fillText(line, canvas.width / 2, padding + (index * lineHeight));
+                });
             }
             
-            // Draw Barcode
-            ctx.drawImage(img, padding, padding + titleHeight);
+            ctx.drawImage(img, padding, padding + titleAreaHeight);
             
             const pngFile = canvas.toDataURL("image/png");
             const downloadLink = document.createElement("a");
-            const fileName = productName ? productName.toLowerCase().replace(/\s+/g, '-') : 'barcode';
+            const fileName = productName ? productName.toLowerCase().substring(0, 20).replace(/\s+/g, '-') : 'barcode';
             downloadLink.download = `${fileName}-${barcodeInput.value}.png`;
             downloadLink.href = pngFile;
             downloadLink.click();
