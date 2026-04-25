@@ -37,7 +37,11 @@
                 <div class="card">
                     <h2>Tạo Mã Vạch Mới</h2>
                     <div class="input-group">
-                        <label for="barcode-input">Nhập dữ liệu:</label>
+                        <label for="product-name-input">Tên sản phẩm (không bắt buộc):</label>
+                        <input type="text" id="product-name-input" placeholder="Ví dụ: Xịt Vải Downy" autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <label for="barcode-input">Mã vạch (SKU/Barcode):</label>
                         <input type="text" id="barcode-input" placeholder="Ví dụ: 123456789" autocomplete="off">
                     </div>
                     <button id="generate-btn" class="btn btn-primary">
@@ -46,6 +50,7 @@
                     
                     <div id="barcode-result" class="barcode-display">
                         <p class="placeholder-text">Mã vạch sẽ hiển thị ở đây</p>
+                        <div id="product-name-display" class="product-title-display hidden"></div>
                         <svg id="barcode-canvas"></svg>
                         <button id="download-btn" class="btn btn-outline hidden">
                             <i class="fas fa-download"></i> Tải về (PNG)
@@ -58,7 +63,7 @@
                             <button id="clear-gen-history-btn" class="btn-text">Xóa</button>
                         </div>
                         <div id="gen-history-list" class="gen-history-list">
-                            <!-- Items added via JS -->
+                            <p class="placeholder-text" style="font-size: 0.8rem">Đang tải lịch sử nhập...</p>
                         </div>
                     </div>
                 </div>
@@ -116,14 +121,14 @@
                         </button>
                     </div>
                     <div id="history-list" class="history-list">
-                        <p class="placeholder-text">Chưa có lịch sử quét nào</p>
+                        <p class="placeholder-text">Đang tải lịch sử quét...</p>
                     </div>
                 </div>
             </section>
         </main>
 
         <footer>
-            <p>&copy; 2024 Barcode Pro. Thiết kế bởi Antigravity.</p>
+            <p>&copy; 2026 Barcode Pro. Thiết kế bởi Antigravity.</p>
         </footer>
     </div>
 

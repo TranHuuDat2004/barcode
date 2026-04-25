@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     
+    const productNameInput = document.getElementById('product-name-input');
+    const productNameDisplay = document.getElementById('product-name-display');
     const barcodeInput = document.getElementById('barcode-input');
     const generateBtn = document.getElementById('generate-btn');
     const barcodeCanvas = document.getElementById('barcode-canvas');
@@ -37,10 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let scanHistory = JSON.parse(localStorage.getItem('barcode_history') || '[]');
     let genHistory = JSON.parse(localStorage.getItem('barcode_gen_history') || '[]');
 
-    // Initialize history displays
-    renderHistory();
-    renderGenHistory();
-
     // --- Tab Switching Logic ---
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -66,15 +64,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Barcode Generation Logic ---
-    generateBtn.addEventListener('click', () => {
-        const text = barcodeInput.value.trim();
-        
+    // Hàm dùng chung để tạo mã vạch
+    const generateBarcode = (text, productName = '', saveToHistory = true) => {
         if (!text) {
             showToast('Vui lòng nhập dữ liệu để tạo mã vạch');
             return;
         }
 
         try {
+            // Hiển thị tên sản phẩm nếu có
+            if (productName.trim()) {
+                productNameDisplay.textContent = productName;
+                productNameDisplay.classList.remove('hidden');
+            } else {
+                productNameDisplay.classList.add('hidden');
+            }
+
             // JsBarcode handles the SVG generation
             JsBarcode("#barcode-canvas", text, {
                 format: "CODE128",
@@ -90,38 +95,68 @@ document.addEventListener('DOMContentLoaded', () => {
             barcodeCanvas.classList.remove('hidden');
             downloadBtn.classList.remove('hidden');
             
-            // Save to generation history
-            saveToGenHistory(text);
+            // Save to generation history if needed
+            if (saveToHistory) {
+                saveToGenHistory(text, productName);
+            }
             
             showToast('Đã tạo mã vạch thành công!');
+            return true;
         } catch (error) {
             console.error(error);
             showToast('Lỗi: Dữ liệu không hợp lệ cho định dạng CODE128');
+            return false;
         }
+    };
+
+    generateBtn.addEventListener('click', () => {
+        const text = barcodeInput.value.trim();
+        const productName = productNameInput.value.trim();
+        generateBarcode(text, productName);
     });
 
     // --- Download Logic ---
     downloadBtn.addEventListener('click', () => {
         const svg = document.getElementById('barcode-canvas');
+        const productName = productNameDisplay.textContent;
+        const isProductNameVisible = !productNameDisplay.classList.contains('hidden');
+        
         const svgData = new XMLSerializer().serializeToString(svg);
         const canvas = document.createElement("canvas");
         const svgSize = svg.getBBox();
         
-        // Add some padding
-        canvas.width = svgSize.width + 40;
-        canvas.height = svgSize.height + 40;
+        const padding = 14;
+        const gap = 14;
+        const fontSize = 20;
+        const titleHeight = isProductNameVisible ? (fontSize + gap) : 0;
+        
+        canvas.width = svgSize.width + (padding * 2);
+        canvas.height = svgSize.height + (padding * 2) + titleHeight;
         
         const ctx = canvas.getContext("2d");
         const img = new Image();
         
         img.onload = () => {
+            // Draw background
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 20, 20);
+            
+            // Draw Title if exists
+            if (isProductNameVisible) {
+                ctx.fillStyle = "black";
+                ctx.font = `bold ${fontSize}px Inter, Arial, sans-serif`;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "top"; // Căn lề trên để tính toán khoảng cách chính xác hơn
+                ctx.fillText(productName, canvas.width / 2, padding);
+            }
+            
+            // Draw Barcode
+            ctx.drawImage(img, padding, padding + titleHeight);
             
             const pngFile = canvas.toDataURL("image/png");
             const downloadLink = document.createElement("a");
-            downloadLink.download = `barcode-${barcodeInput.value}.png`;
+            const fileName = productName ? productName.toLowerCase().replace(/\s+/g, '-') : 'barcode';
+            downloadLink.download = `${fileName}-${barcodeInput.value}.png`;
             downloadLink.href = pngFile;
             downloadLink.click();
             showToast('Đã tải xuống mã vạch');
@@ -390,9 +425,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Generation History Helper Functions ---
-    function saveToGenHistory(code) {
+    function saveToGenHistory(code, productName = '') {
         const timestamp = new Date().toLocaleString('vi-VN');
-        const newItem = { code, time: timestamp, id: Date.now() };
+        const newItem = { code, productName, time: timestamp, id: Date.now() };
 
         // Tránh trùng lặp: nếu mã đã tồn tại (dựa trên giá trị code), xóa mã cũ
         genHistory = genHistory.filter(item => item.code !== code);
@@ -419,7 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
             div.className = 'gen-item';
             div.innerHTML = `
                 <div class="history-info">
-                    <span class="history-code">${item.code}</span>
+                    <span class="history-code">${item.productName ? item.productName + ' - ' : ''}${item.code}</span>
                     <span class="history-time">${item.time}</span>
                 </div>
                 <div class="history-actions">
@@ -436,9 +471,10 @@ document.addEventListener('DOMContentLoaded', () => {
             div.querySelector('.history-info').onclick = (e) => {
                 e.stopPropagation();
                 barcodeInput.value = item.code;
-                generateBtn.click();
+                productNameInput.value = item.productName || '';
+                generateBarcode(item.code, item.productName || '', true); // Gọi trực tiếp hàm tạo mã
                 showToast(`Đã chọn mã: ${item.code}`);
-                // Cuộn lên đầu trang để xem mã vừa tạo (tùy chọn)
+                // Cuộn lên đầu trang để xem mã vừa tạo
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             };
 
@@ -487,4 +523,21 @@ document.addEventListener('DOMContentLoaded', () => {
             toast.remove();
         }, 3000);
     }
+
+    // --- Khởi tạo dữ liệu ban đầu ---
+    // Gọi sau một khoảng trễ ngắn để đảm bảo thư viện JsBarcode và DOM đã hoàn toàn sẵn sàng
+    const initApp = () => {
+        if (typeof JsBarcode === 'function') {
+            console.log("JsBarcode đã sẵn sàng.");
+            renderHistory();
+            renderGenHistory();
+        } else {
+            console.warn("Đang đợi JsBarcode tải...");
+            // Thử lại sau 500ms nếu thư viện chưa tải xong
+            setTimeout(initApp, 500);
+        }
+    };
+
+    // Bắt đầu quá trình khởi tạo sau khi DOM sẵn sàng 300ms để tạo cảm giác mượt mà
+    setTimeout(initApp, 300);
 });
