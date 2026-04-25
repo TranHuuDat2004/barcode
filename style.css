@@ -507,6 +507,48 @@ footer p {
     font-size: 0.8rem;
 }
 
+.mt-20 {
+    margin-top: 20px;
+}
+
+.gen-history-container {
+    border-top: 1px solid var(--border);
+    padding-top: 15px;
+}
+
+.gen-history-container h3 {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+}
+
+.gen-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.gen-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.gen-item:hover {
+    background: #f1f5f9;
+    border-color: var(--primary);
+}
+
+.gen-item:active {
+    transform: scale(0.98);
+}
+
 /* Responsive adjustments */
 @media (max-width: 400px) {
     .app-container {

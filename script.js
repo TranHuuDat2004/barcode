@@ -24,6 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // History elements
     const historyList = document.getElementById('history-list');
     const clearHistoryBtn = document.getElementById('clear-history-btn');
+    const genHistoryList = document.getElementById('gen-history-list');
+    const clearGenHistoryBtn = document.getElementById('clear-gen-history-btn');
     
     // Zoom controls
     const zoomControls = document.getElementById('zoom-controls');
@@ -33,9 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let html5QrCode = null;
     let isScanning = false;
     let scanHistory = JSON.parse(localStorage.getItem('barcode_history') || '[]');
+    let genHistory = JSON.parse(localStorage.getItem('barcode_gen_history') || '[]');
 
-    // Initialize history display
+    // Initialize history displays
     renderHistory();
+    renderGenHistory();
 
     // --- Tab Switching Logic ---
     tabBtns.forEach(btn => {
@@ -85,6 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
             placeholderText.classList.add('hidden');
             barcodeCanvas.classList.remove('hidden');
             downloadBtn.classList.remove('hidden');
+            
+            // Save to generation history
+            saveToGenHistory(text);
+            
             showToast('Đã tạo mã vạch thành công!');
         } catch (error) {
             console.error(error);
@@ -123,7 +131,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Barcode Scanning Logic ---
+    let lastResult = null;
+    let resultCount = 0;
+
     const onScanSuccess = (decodedText, decodedResult) => {
+        // Cơ chế ổn định (Stabilization): 
+        // Tránh trường hợp app quá nhạy dẫn đến đọc sai hoặc đọc thiếu số (ví dụ mã 13 số nhưng chỉ đọc được 6 số).
+        // Yêu cầu kết quả phải trùng khớp 2 lần liên tiếp mới chấp nhận.
+        
+        if (decodedText !== lastResult) {
+            lastResult = decodedText;
+            resultCount = 1;
+            return; // Chưa đủ tin cậy, đợi khung hình tiếp theo
+        } else {
+            resultCount++;
+        }
+
+        // Nếu mã này xuất hiện ổn định (ví dụ 2 lần liên tiếp)
+        if (resultCount < 2) {
+            return;
+        }
+
+        // Reset bộ đệm cho lần quét sau
+        lastResult = null;
+        resultCount = 0;
+
         // Success callback
         console.log(`Code matched = ${decodedText}`, decodedResult);
         
@@ -154,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const config = { 
-                fps: 20, // Tăng fps để quét mượt hơn
+                fps: 15, // Tốc độ vừa phải để giải mã chính xác hơn
                 qrbox: (viewfinderWidth, viewfinderHeight) => {
                     // Trả về vùng quét khớp với tỉ lệ 70% width, 60% height trong CSS
                     return {
@@ -355,6 +387,90 @@ document.addEventListener('DOMContentLoaded', () => {
             renderHistory();
             showToast('Đã xóa toàn bộ lịch sử');
         }
+    };
+
+    // --- Generation History Helper Functions ---
+    function saveToGenHistory(code) {
+        const timestamp = new Date().toLocaleString('vi-VN');
+        const newItem = { code, time: timestamp, id: Date.now() };
+
+        // Tránh trùng lặp: nếu mã đã tồn tại (dựa trên giá trị code), xóa mã cũ
+        genHistory = genHistory.filter(item => item.code !== code);
+        genHistory.unshift(newItem);
+        
+        // Giới hạn 20 mục gần đây cho danh sách dọc
+        if (genHistory.length > 20) {
+            genHistory.pop();
+        }
+        
+        localStorage.setItem('barcode_gen_history', JSON.stringify(genHistory));
+        renderGenHistory();
+    }
+
+    function renderGenHistory() {
+        if (genHistory.length === 0) {
+            genHistoryList.innerHTML = '<p class="placeholder-text" style="font-size: 0.8rem">Chưa có mã nào được tạo</p>';
+            return;
+        }
+
+        genHistoryList.innerHTML = '';
+        genHistory.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'gen-item';
+            div.innerHTML = `
+                <div class="history-info">
+                    <span class="history-code">${item.code}</span>
+                    <span class="history-time">${item.time}</span>
+                </div>
+                <div class="history-actions">
+                    <button class="btn-icon copy-gen" data-code="${item.code}" title="Sao chép">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="btn-icon delete-gen" data-id="${item.id}" title="Xóa">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            `;
+            
+            // Khi click vào vùng thông tin thì tạo lại mã
+            div.querySelector('.history-info').onclick = (e) => {
+                e.stopPropagation();
+                barcodeInput.value = item.code;
+                generateBtn.click();
+                showToast(`Đã chọn mã: ${item.code}`);
+                // Cuộn lên đầu trang để xem mã vừa tạo (tùy chọn)
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            genHistoryList.appendChild(div);
+        });
+
+        // Add event listeners for gen history actions
+        document.querySelectorAll('.copy-gen').forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(btn.getAttribute('data-code'));
+                showToast('Đã sao chép mã vạch');
+            };
+        });
+
+        document.querySelectorAll('.delete-gen').forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                const id = parseInt(btn.getAttribute('data-id'));
+                genHistory = genHistory.filter(item => item.id !== id);
+                localStorage.setItem('barcode_gen_history', JSON.stringify(genHistory));
+                renderGenHistory();
+                showToast('Đã xóa mục lịch sử');
+            };
+        });
+    }
+
+    clearGenHistoryBtn.onclick = () => {
+        genHistory = [];
+        localStorage.setItem('barcode_gen_history', JSON.stringify(genHistory));
+        renderGenHistory();
+        showToast('Đã xóa lịch sử tạo');
     };
 
     // --- Helper: Toast Notification ---
